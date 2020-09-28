@@ -1,5 +1,6 @@
 import dbConnect from '../../../utils/dbConnect'
 import Monster from '../../../models/Monster'
+import { parseAppearances } from '../../../utils/responsePipes'
 
 export default async function handler(req, res) {
   const {
@@ -12,8 +13,8 @@ export default async function handler(req, res) {
   switch (method) {
     case 'GET':
       try {
-        const monster = await Monster.findById(id)
-          .populate('appearances', 'url name') /* find data that contains ID in database */
+        const monster = await Monster.findById(id)/* find data that contains ID in database */
+        monster = parseAppearances(monster)
         res.status(200).json({ success: true, count: monster.length, data: monster })
       } catch (error) {
         res.status(400).json({ success: false })

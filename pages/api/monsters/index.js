@@ -1,11 +1,12 @@
 import dbConnect from '../../../utils/dbConnect'
 import Monster from '../../../models/Monster'
+import { parseLimit, parseAppearances } from '../../../utils/responsePipes'
 
 export default async function handler(req, res) {
   const { method } = req
   const pageOptions = {
     page: parseInt(req.query.page, 10) || 0,
-    limit: parseInt(req.query.limit, 10) || 20,
+    limit: parseLimit(req.query.limit),
     name: req.query.name || undefined
   }
 
@@ -19,15 +20,13 @@ export default async function handler(req, res) {
           monsters = await Monster.find({name: new RegExp(pageOptions.name)})
             .skip(pageOptions.page * pageOptions.limit)
             .limit(pageOptions.limit)
-            .populate('appearances','url name')
         }
         else {
           monsters = await Monster.find({})
             .skip(pageOptions.page * pageOptions.limit)
             .limit(pageOptions.limit)
-            .populate('appearances','url name')
         }
-
+        monsters = parseAppearances(monsters)
         res.status(200).json({ success: true, count: monsters.length, data: monsters })
       } catch (error) {
         res.status(400).json({ success: false })

@@ -1,5 +1,6 @@
 import dbConnect from '../../../utils/dbConnect'
 import Item from '../../../models/Item'
+import { parseAppearances } from '../../../utils/responsePipes'
 
 export default async function handler(req, res) {
   const {
@@ -12,8 +13,8 @@ export default async function handler(req, res) {
   switch (method) {
     case 'GET':
       try {
-        const item = await Item.findById(id)
-          .populate('games', 'url name') /* find data that contains ID in database */
+        const item = await Item.findById(id)/* find data that contains ID in database */
+        item = parseAppearances(item)
         res.status(200).json({ success: true, count: item.length, data: item })
       } catch (error) {
         res.status(400).json({ success: false })

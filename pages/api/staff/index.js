@@ -1,11 +1,12 @@
 import dbConnect from '../../../utils/dbConnect'
 import Staff from '../../../models/Staff'
+import { parseLimit, parseWorkedOn } from '../../../utils/responsePipes'
 
 export default async function handler(req, res) {
   const { method } = req
   const pageOptions = {
     page: parseInt(req.query.page, 10) || 0,
-    limit: parseInt(req.query.limit, 10) || 20,
+    limit: parseLimit(req.query.limit),
     name: req.query.name || undefined
   }
 
@@ -19,15 +20,15 @@ export default async function handler(req, res) {
           staff = await Staff.find({name: new RegExp(pageOptions.name)})
             .skip(pageOptions.page * pageOptions.limit)
             .limit(pageOptions.limit)
-            .populate('worked_on', 'url name')
+            .exec()
         }
         else {
           staff = await Staff.find({})
             .skip(pageOptions.page * pageOptions.limit)
             .limit(pageOptions.limit)
-            .populate('worked_on', 'url name')
+            .exec()
         }
-
+        staff = parseWorkedOn(staff)
         res.status(200).json({ success: true, count: staff.length, data: staff })
       } catch (error) {
         res.status(400).json({ success: false })

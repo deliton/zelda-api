@@ -1,5 +1,6 @@
 import dbConnect from '../../../utils/dbConnect'
 import Staff from '../../../models/Staff'
+import { parseWorkedOn } from '../../../utils/responsePipes'
 
 export default async function handler(req, res) {
   const {
@@ -12,8 +13,8 @@ export default async function handler(req, res) {
   switch (method) {
     case 'GET':
       try {
-        const staff = await Staff.findById(id)
-          .populate('worked_on','url name') /* find data that contains ID in database */
+        const staff = await Staff.findById(id)/* find data that contains ID in database */
+        staff = parseWorkedOn(staff)
         res.status(200).json({ success: true,count: staff.length, data: staff })
       } catch (error) {
         res.status(400).json({ success: false })
