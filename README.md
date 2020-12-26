@@ -4,6 +4,9 @@
 ## Description
 This repository holds the code of the Zelda API, a RESTful API of "The Legend of Zelda" game franchise, which provides you with games, characters, enemies, bosses, dungeons and more! The Zelda API is currently deployed on vercel, and can be accessed with the following url: http://zelda-api.apius.cc/
 
+
+NextJS never cease to amaze me! So I started this project as some kind of proof of concept application, proving that it is possible to build an API with MongoDB using such a powerful tool. This is an experimental implementation, so some availability problems can be expected.
+
 ## Getting Started
 
 Since this API doesn't require you to provide an API key, it's extremely easy to use. Feel free to explore our documentation and test routes!
