@@ -1,5 +1,5 @@
 import { JSONDriver } from "../../../db/driver";
-import { parseLimit } from "../../../utils/responsePipes";
+import { parseLimit, parseObject } from "../../../utils/responsePipes";
 
 export default async function handler(req, res) {
   const { method } = req;
@@ -25,15 +25,7 @@ export default async function handler(req, res) {
             .skip(pageOptions.page * pageOptions.limit)
             .limit(pageOptions.limit);
         }
-        // replace gameIds with link + ID
-        dungeons.data = dungeons.data.map((entries) => {
-          return {
-            ...entries,
-            appearances: entries.appearances.map(
-              (gameId) => process.env.API_URL + "games/" + gameId["$oid"]
-            ),
-          };
-        });
+        dungeons.data = parseObject(dungeons.data, "games/", "appearances");
         res
           .status(200)
           .json({

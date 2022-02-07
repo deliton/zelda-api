@@ -1,4 +1,5 @@
 import { JSONDriver } from "../../../db/driver";
+import { parseOneObject } from "../../../utils/responsePipes";
 
 export default async function handler(req, res) {
   const {
@@ -13,9 +14,7 @@ export default async function handler(req, res) {
     case "GET":
       try {
         const character = Character.findById(id);
-        character.data.appearances = character.data.appearances.map(
-          (gameId) => process.env.API_URL + "games/" + gameId["$oid"]
-        );
+        character.data = parseOneObject(character.data, "games/", "appearances");
         res
           .status(200)
           .json({

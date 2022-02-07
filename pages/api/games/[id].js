@@ -12,7 +12,7 @@ export default async function handler(req, res) {
   switch (method) {
     case "GET":
       try {
-        const game = await Game.findById(id);
+        const game = Game.findById(id);
         res
           .status(200)
           .json({ success: true, count: game.data.length, data: game.data });

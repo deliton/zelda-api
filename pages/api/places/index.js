@@ -1,5 +1,5 @@
 import { JSONDriver } from "../../../db/driver";
-import { parseLimit } from "../../../utils/responsePipes";
+import { parseLimit, parseObject } from "../../../utils/responsePipes";
 
 export default async function handler(req, res) {
   const { method } = req;
@@ -25,25 +25,15 @@ export default async function handler(req, res) {
             .skip(pageOptions.page * pageOptions.limit)
             .limit(pageOptions.limit);
         }
-        places.data = places.data.map((entries) => {
-            return {
-              ...entries,
-              appearances: entries.appearances.map(
-                (gameId) => process.env.API_URL + "games/" + gameId["$oid"]
-              ),
-            };
-          });
-        places.data = places.data.map((entries) => {
-          return {
-            ...entries,
-            inhabitants: entries.inhabitants.map(
-              (characterId) => process.env.API_URL + "characters/" + characterId["$oid"]
-            ),
-          };
-        });
+        places.data = parseObject(places.data, "games/", "appearances");
+        places.data = parseObject(places.data, "characters/", "inhabitants");
         res
           .status(200)
-          .json({ success: true, count: places.data.length, data: places.data });
+          .json({
+            success: true,
+            count: places.data.length,
+            data: places.data,
+          });
       } catch (error) {
         res.status(400).json({ success: false });
       }

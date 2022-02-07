@@ -1,43 +1,35 @@
 function parseLimit(limit) {
-    if(limit != null) {
-        var intLimit = parseInt(limit,10)
-        if(intLimit > 50) {
-            return 50
-        }
-        else {
-            return intLimit
-        }
+  if (limit != null) {
+    var intLimit = parseInt(limit, 10);
+    if (intLimit > 50) {
+      return 50;
+    } else {
+      return intLimit;
     }
-    else {
-        return 20
-    }
+  } else {
+    return 20;
+  }
 }
 
-function parseAppearances(response) {
-    return response.map(object => {
-        return {
-          ...object._doc,
-          appearances: object._doc.appearances.map(game => process.env.API_URL + 'games/' + game),
-        }
-      })
+function parseObject(object, apiPath, objectName) {
+  return object.map((entries) => {
+    return {
+      ...entries,
+      [objectName]: entries[objectName].map(
+        (objectId) => process.env.API_URL + apiPath + objectId["$oid"]
+      ),
+    };
+  });
 }
 
-function parseGames(response) {
-    return response.map(object => {
-        return {
-          ...object._doc,
-          games: object.games.map(game => process.env.API_URL + 'games/' + game),
-        }
-      })
+function parseOneObject(object, apiPath, objectName) {
+  const entries = object[objectName].map(
+    (objectId) => process.env.API_URL + apiPath + objectId["$oid"]
+  );
+  return {
+    ...object,
+    [objectName]: entries,
+  }
 }
 
-function parseWorkedOn(response) {
-    return response.map(object => {
-        return {
-          ...object._doc,
-          worked_on: object.worked_on.map(game => process.env.API_URL + 'games/' + game),
-        }
-      })
-}
-
-module.exports = { parseAppearances, parseLimit, parseWorkedOn, parseGames}
+module.exports = { parseObject, parseOneObject, parseLimit };

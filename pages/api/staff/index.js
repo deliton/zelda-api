@@ -1,5 +1,9 @@
 import { JSONDriver } from "../../../db/driver";
-import { parseLimit, parseWorkedOn } from "../../../utils/responsePipes";
+import {
+  parseLimit,
+  parseObject,
+  parseWorkedOn,
+} from "../../../utils/responsePipes";
 
 export default async function handler(req, res) {
   const { method } = req;
@@ -25,14 +29,7 @@ export default async function handler(req, res) {
             .skip(pageOptions.page * pageOptions.limit)
             .limit(pageOptions.limit);
         }
-        staff.data = staff.data.map((entries) => {
-          return {
-            ...entries,
-            worked_on: entries.worked_on.map(
-              (gameId) => process.env.API_URL + "games/" + gameId["$oid"]
-            ),
-          };
-        });
+        staff.data = parseObject(staff.data, "games/", "worked_on");
         res
           .status(200)
           .json({ success: true, count: staff.data.length, data: staff.data });

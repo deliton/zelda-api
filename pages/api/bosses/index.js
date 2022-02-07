@@ -1,5 +1,5 @@
 import { JSONDriver } from "../../../db/driver";
-import { parseLimit } from "../../../utils/responsePipes";
+import { parseLimit, parseObject } from "../../../utils/responsePipes";
 
 export default async function handler(req, res) {
   const { method } = req;
@@ -25,34 +25,15 @@ export default async function handler(req, res) {
             .skip(pageOptions.page * pageOptions.limit)
             .limit(pageOptions.limit);
         }
-        // replace gameIds with link + ID
-        bosses.data = bosses.data.map((entries) => {
-          return {
-            ...entries,
-            appearances: entries.appearances.map(
-              (gameId) => process.env.API_URL + "games/" + gameId["$oid"]
-            ),
-          };
+        bosses.data = parseObject(bosses.data, "games/", "appearances");
+        bosses.data = parseObject(bosses.data, "dungeons/", "dungeons");
+        res.status(200).json({
+          success: true,
+          count: bosses.data.length,
+          data: bosses.data,
         });
-        // replace dungeonIds with link + ID
-        bosses.data = bosses.data.map((entries) => {
-          return {
-            ...entries,
-            dungeons: entries.dungeons.map(
-              (dungeonId) =>
-                process.env.API_URL + "dungeons/" + dungeonId["$oid"]
-            ),
-          };
-        });
-        res
-          .status(200)
-          .json({
-            success: true,
-            count: bosses.data.length,
-            data: bosses.data,
-          });
       } catch (error) {
-        res.status(400).json({ success: false });
+        res.status(400).json({ success: false, message: error });
         console.log(error);
       }
       break;
