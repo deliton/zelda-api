@@ -1,25 +1,27 @@
-import dbConnect from '../../../utils/dbConnect'
-import Game from '../../../models/Game'
+import { JSONDriver } from "../../../db/driver";
 
 export default async function handler(req, res) {
   const {
     query: { id },
     method,
-  } = req
+  } = req;
 
-  await dbConnect()
+  const Game = new JSONDriver("games");
+  await Game.init();
 
   switch (method) {
-    case 'GET':
+    case "GET":
       try {
-        const game = await Game.findById(id) /* find data that contains ID in database */
-        res.status(200).json({ success: true, count: game.length, data: game })
+        const game = await Game.findById(id);
+        res
+          .status(200)
+          .json({ success: true, count: game.data.length, data: game.data });
       } catch (error) {
-        res.status(400).json({ success: false })
+        res.status(400).json({ success: false });
       }
-      break
+      break;
     default:
-      res.status(400).json({ success: false })
-      break
+      res.status(400).json({ success: false });
+      break;
   }
 }

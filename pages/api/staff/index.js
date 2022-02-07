@@ -1,42 +1,48 @@
-import dbConnect from '../../../utils/dbConnect'
-import Staff from '../../../models/Staff'
-import { parseLimit, parseWorkedOn } from '../../../utils/responsePipes'
+import { JSONDriver } from "../../../db/driver";
+import { parseLimit, parseWorkedOn } from "../../../utils/responsePipes";
 
 export default async function handler(req, res) {
-  const { method } = req
+  const { method } = req;
   const pageOptions = {
     page: parseInt(req.query.page, 10) || 0,
     limit: parseLimit(req.query.limit),
-    name: req.query.name || undefined
-  }
+    name: req.query.name || undefined,
+  };
 
-  await dbConnect()
+  const Staff = new JSONDriver("staff");
+  await Staff.init();
 
   switch (method) {
-    case 'GET':
+    case "GET":
       try {
-        var staff
+        var staff;
         if (pageOptions.name) {
-          staff = await Staff.find({name: new RegExp(pageOptions.name)})
+          staff = Staff.search({ name: pageOptions.name })
             .skip(pageOptions.page * pageOptions.limit)
-            .limit(pageOptions.limit)
-            .exec()
-        }
-        else {
-          staff = await Staff.find({})
+            .limit(pageOptions.limit);
+        } else {
+          staff = Staff.findMany()
             .skip(pageOptions.page * pageOptions.limit)
-            .limit(pageOptions.limit)
-            .exec()
+            .limit(pageOptions.limit);
         }
-        staff = parseWorkedOn(staff)
-        res.status(200).json({ success: true, count: staff.length, data: staff })
+        staff.data = staff.data.map((entries) => {
+          return {
+            ...entries,
+            worked_on: entries.worked_on.map(
+              (gameId) => process.env.API_URL + "games/" + gameId["$oid"]
+            ),
+          };
+        });
+        res
+          .status(200)
+          .json({ success: true, count: staff.data.length, data: staff.data });
       } catch (error) {
-        res.status(400).json({ success: false })
-        console.log(error)
+        res.status(400).json({ success: false });
+        console.log(error);
       }
-      break
+      break;
     default:
-      res.status(400).json({ success: false })
-      break
+      res.status(400).json({ success: false });
+      break;
   }
 }

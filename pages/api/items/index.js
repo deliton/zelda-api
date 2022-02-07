@@ -1,40 +1,49 @@
-import dbConnect from '../../../utils/dbConnect'
-import Item from '../../../models/Item'
-import { parseLimit, parseAppearances } from '../../../utils/responsePipes'
+import { JSONDriver } from "../../../db/driver";
+import { parseLimit } from "../../../utils/responsePipes";
 
 export default async function handler(req, res) {
-  const { method } = req
+  const { method } = req;
   const pageOptions = {
     page: parseInt(req.query.page, 10) || 0,
     limit: parseLimit(req.query.limit),
-    name: req.query.name || undefined
-  }
+    name: req.query.name || undefined,
+  };
 
-  await dbConnect()
+  const Item = new JSONDriver("items");
+  await Item.init();
 
   switch (method) {
-    case 'GET':
+    case "GET":
       try {
-        var items
-        if(pageOptions.name) {
-          items = await Item.find({name: new RegExp(pageOptions.name)})
-          .skip(pageOptions.page * pageOptions.limit)
-          .limit(pageOptions.limit)
-        }
-        else {
-          items = await Item.find({})
+        var items;
+        if (pageOptions.name) {
+          items = Item.search({ name: pageOptions.name })
             .skip(pageOptions.page * pageOptions.limit)
-            .limit(pageOptions.limit)
+            .limit(pageOptions.limit);
+        } else {
+          items = Item.findMany()
+            .skip(pageOptions.page * pageOptions.limit)
+            .limit(pageOptions.limit);
         }
-        items = parseAppearances(items)
-        res.status(200).json({ success: true, count: items.length, data: items })
+        // replace gameIds with link + ID
+        items.data = items.data.map((entries) => {
+          return {
+            ...entries,
+            games: entries.games.map(
+              (gameId) => process.env.API_URL + "games/" + gameId["$oid"]
+            ),
+          };
+        });
+        res
+          .status(200)
+          .json({ success: true, count: items.data.length, data: items.data });
       } catch (error) {
-        res.status(400).json({ success: false })
-        console.log(error)
+        res.status(400).json({ success: false });
+        console.log(error);
       }
-      break
+      break;
     default:
-      res.status(400).json({ success: false })
-      break
+      res.status(400).json({ success: false });
+      break;
   }
 }

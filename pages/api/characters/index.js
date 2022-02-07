@@ -1,44 +1,53 @@
-import dbConnect from '../../../utils/dbConnect'
-import Character from '../../../models/Character'
-import { parseLimit, parseAppearances } from '../../../utils/responsePipes'
+import { JSONDriver } from "../../../db/driver";
+import { parseLimit } from "../../../utils/responsePipes";
 
 export default async function handler(req, res) {
-  const { method } = req
+  const { method } = req;
   const pageOptions = {
     page: parseInt(req.query.page, 10) || 0,
     limit: parseLimit(req.query.limit),
-    name: req.query.name || undefined
-  }
+    name: req.query.name || undefined,
+  };
 
-  await dbConnect()
+  const Character = new JSONDriver("characters");
+  await Character.init();
 
   switch (method) {
-    case 'GET':
+    case "GET":
       try {
-        var characters
+        var characters;
         if (pageOptions.name) {
-          characters = await Character.find({ name: new RegExp(pageOptions.name) })
+          characters = Character.search({ name: pageOptions.name })
             .skip(pageOptions.page * pageOptions.limit)
-            .limit(pageOptions.limit)
-            .exec()
-        }
-        else {
-          characters = await Character.find({})
+            .limit(pageOptions.limit);
+        } else {
+          characters = Character.findMany()
             .skip(pageOptions.page * pageOptions.limit)
-            .limit(pageOptions.limit)
-            .exec()
+            .limit(pageOptions.limit);
         }
 
-        characters = parseAppearances(characters)
+        // replace gameIds with link + ID
+        characters.data = characters.data.map((entries) => {
+          return {
+            ...entries,
+            appearances: entries.appearances.map(
+              (gameId) => process.env.API_URL + "games/" + gameId["$oid"]
+            ),
+          };
+        });
 
-        res.status(200).json({ success: true, count: characters.length, data: characters })
+        res.status(200).json({
+          success: true,
+          count: characters.data.length,
+          data: characters.data,
+        });
       } catch (error) {
-        res.status(400).json({ success: false })
-        console.log(error)
+        res.status(400).json({ success: false });
+        console.log(error);
       }
-      break
+      break;
     default:
-      res.status(400).json({ success: false })
-      break
+      res.status(400).json({ success: false });
+      break;
   }
 }

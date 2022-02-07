@@ -1,33 +1,33 @@
-import dbConnect from '../../../utils/dbConnect'
-import Boss from '../../../models/Boss'
-import { parseAppearances } from '../../../utils/responsePipes'
+import { JSONDriver } from "../../../db/driver";
 
 export default async function handler(req, res) {
   const {
     query: { id },
     method,
-  } = req
+  } = req;
 
-  await dbConnect()
+  const Boss = new JSONDriver("bosses");
+  await Boss.init();
 
   switch (method) {
-    case 'GET':
+    case "GET":
       try {
-        const boss = await Boss.findById(id)/* find data that contains ID in database */
-        boss = parseAppearances(boss)
-        bosses = bosses.map(entries => {
-          return {
-              ...entries,
-              dungeons: entries.dungeons.map(dungeon => process.env.API_URL + 'dungeons/' + dungeon)
-          }
-      })
-        res.status(200).json({ success: true, count: boss.length, data: boss })
+        const boss = Boss.findById(id);
+        boss.data.appearances = boss.data.appearances.map(
+          (gameId) => process.env.API_URL + "games/" + gameId["$oid"]
+        );
+        boss.data.dungeons = boss.data.dungeons.map(
+          (dungeonId) => process.env.API_URL + "dungeons/" + dungeonId["$oid"]
+        );
+        res
+          .status(200)
+          .json({ success: true, count: boss.data.length, data: boss.data });
       } catch (error) {
-        res.status(400).json({ success: false })
+        res.status(400).json({ success: false });
       }
-      break
+      break;
     default:
-      res.status(400).json({ success: false })
-      break
+      res.status(400).json({ success: false });
+      break;
   }
 }

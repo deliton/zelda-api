@@ -1,27 +1,34 @@
-import dbConnect from '../../../utils/dbConnect'
-import Dungeon from '../../../models/Dungeon'
-import { parseAppearances } from '../../../utils/responsePipes'
+import { JSONDriver } from "../../../db/driver";
 
 export default async function handler(req, res) {
   const {
     query: { id },
     method,
-  } = req
+  } = req;
 
-  await dbConnect()
+  const Dungeon = new JSONDriver("dungeons");
+  await Dungeon.init();
 
   switch (method) {
-    case 'GET':
+    case "GET":
       try {
-        const dungeon = await Dungeon.findById(id)/* find data that contains ID in database */
-        dungeon = parseAppearances(dungeon)
-        res.status(200).json({ success: true, count: dungeon.length, data: dungeon })
+        const dungeon = Dungeon.findById(id);
+        dungeon.data.appearances = dungeon.data.appearances.map(
+          (gameId) => process.env.API_URL + "games/" + gameId["$oid"]
+        );
+        res
+          .status(200)
+          .json({
+            success: true,
+            count: dungeon.data.length,
+            data: dungeon.data,
+          });
       } catch (error) {
-        res.status(400).json({ success: false })
+        res.status(400).json({ success: false });
       }
-      break
+      break;
     default:
-      res.status(400).json({ success: false })
-      break
+      res.status(400).json({ success: false });
+      break;
   }
 }
