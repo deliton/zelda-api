@@ -35,7 +35,6 @@ export default async function handler(req, res) {
           .json({ success: true, count: staff.data.length, data: staff.data });
       } catch (error) {
         res.status(400).json({ success: false });
-        console.log(error);
       }
       break;
     default:

@@ -1,13 +1,13 @@
 import { readFile } from "fs/promises";
 
-var data = null;
+var data = {};
 
 export const JSONLoader = async (model) => {
   if (!model) {
     return;
   }
-  if (!data) {
-    data = JSON.parse(await readFile(`db/data/${model}.json`));
+  if (!data[model]) {
+    data[model] = JSON.parse(await readFile(`db/data/${model}.json`));
   }
-  return data;
+  return data[model];
 };

@@ -1,4 +1,5 @@
 import { JSONLoader } from "./loader";
+import { readFile } from "fs/promises";
 
 const NOT_INITIALIZED_ERROR = "JSON driver not initialized. run init() first";
 const ID_NOT_FOUND_ERROR = "ID cannot be undefined.";
@@ -15,6 +16,7 @@ export class JSONDriver {
   async init() {
     this.data = await JSONLoader(this.model);
     this.isInitialized = true;
+    return this;
   }
 
   findMany(filters) {
@@ -51,6 +53,7 @@ export class JSONDriver {
       throw new Error(NOT_INITIALIZED_ERROR);
     }
     this.data = this.data.slice(begin, end);
+
     return this;
   }
 
@@ -59,6 +62,7 @@ export class JSONDriver {
       throw new Error(NOT_INITIALIZED_ERROR);
     }
     this.data = this.data.slice(0, amount);
+
     return this;
   }
 
@@ -76,6 +80,34 @@ export class JSONDriver {
         }
       }
       return false;
+    });
+
+    return this;
+  }
+
+  async join({ model, on }) {
+    if (!this.isInitialized) {
+      throw new Error(NOT_INITIALIZED_ERROR);
+    }
+    if (!model) {
+      throw new Error("Model cannot be undefined.");
+    }
+    if (!on) {
+      throw new Error("On cannot be undefined.");
+    }
+    const loadedModel = await JSONLoader(model);
+    this.data = this.data.map((entry) => {
+      return {
+        ...entry,
+        [on]:
+          typeof entry[on] === "object"
+            ? entry[on].map((id) => {
+                return loadedModel.find(
+                  (modelEntry) => modelEntry._id["$oid"] === id["$oid"]
+                );
+              })
+            : [],
+      };
     });
     return this;
   }

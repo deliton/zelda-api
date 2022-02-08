@@ -29,7 +29,6 @@ export default async function handler(req, res) {
           .status(200)
           .json({ success: true, count: games.data.length, data: games.data });
       } catch (error) {
-        console.log(error);
         res.status(400).json({ success: false });
       }
       break;
