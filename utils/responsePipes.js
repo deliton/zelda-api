@@ -26,7 +26,7 @@ function parseObject(object, apiPath, objectName) {
 function parseOneObject(object, apiPath, objectName) {
   const root_path = process.env.API_URL ? process.env.API_URL : "https://zelda.fanapis.com/api/"
   const entries = object[objectName].map(
-    (objectId) => root_path + path + objectId
+    (objectId) => root_path + apiPath + objectId
   );
   return {
     ...object,
