@@ -1,6 +1,5 @@
-import dbConnect from '../../../utils/dbConnect'
-import Monster from '../../../models/Monster'
-import { parseAppearances } from '../../../utils/responsePipes'
+import { JSONDriver } from "../../../db/driver";
+import { parseOneObject } from "../../../utils/responsePipes";
 
 export default async function handler(req, res) {
   const {
@@ -8,14 +7,15 @@ export default async function handler(req, res) {
     method,
   } = req
 
-  await dbConnect()
+  const Monster = new JSONDriver("monsters");
+  await Monster.init();
 
   switch (method) {
     case 'GET':
       try {
-        const monster = await Monster.findById(id)/* find data that contains ID in database */
-        monster = parseAppearances(monster)
-        res.status(200).json({ success: true, count: monster.length, data: monster })
+        const monster = Monster.findById(id);
+        monster.data = parseOneObject(monster.data, "games/", "appearances");
+        res.status(200).json({ success: true, count: monster.data.length, data: monster.data })
       } catch (error) {
         res.status(400).json({ success: false })
       }

@@ -1,6 +1,5 @@
-import dbConnect from '../../../utils/dbConnect'
-import Item from '../../../models/Item'
-import { parseAppearances } from '../../../utils/responsePipes'
+import { JSONDriver } from "../../../db/driver";
+import { parseOneObject } from "../../../utils/responsePipes";
 
 export default async function handler(req, res) {
   const {
@@ -8,14 +7,15 @@ export default async function handler(req, res) {
     method,
   } = req
 
-  await dbConnect()
+  const Item = new JSONDriver("items");
+  await Item.init();
 
   switch (method) {
     case 'GET':
       try {
-        const item = await Item.findById(id)/* find data that contains ID in database */
-        item = parseAppearances(item)
-        res.status(200).json({ success: true, count: item.length, data: item })
+        const item = Item.findById(id);
+        item.data = parseOneObject(item.data, "games/", "games");
+        res.status(200).json({ success: true, count: item.data.length, data: item.data })
       } catch (error) {
         res.status(400).json({ success: false })
       }

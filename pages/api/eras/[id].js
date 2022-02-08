@@ -1,27 +1,27 @@
-import dbConnect from '../../../utils/dbConnect'
-import Era from '../../../models/Era'
-import { parseGames } from '../../../utils/responsePipes'
+import { JSONDriver } from "../../../db/driver";
+import { parseOneObject } from "../../../utils/responsePipes";
 
 export default async function handler(req, res) {
   const {
     query: { id },
     method,
-  } = req
+  } = req;
 
-  await dbConnect()
+  const Era = new JSONDriver("eras");
+  await Era.init();
 
   switch (method) {
-    case 'GET':
+    case "GET":
       try {
-        const era = await Era.findById(id)/* find data that contains ID in database */
-        era = parseGames(era)
-        res.status(200).json({ success: true, count: era.length, data: era })
+        const era = Era.findById(id);
+        era.data = parseOneObject(era.data, "games/", "games");
+        res.status(200).json({ success: true, count: era.data.length, data: era.data });
       } catch (error) {
-        res.status(400).json({ success: false })
+        res.status(400).json({ success: false, message: error });
       }
-      break
+      break;
     default:
-      res.status(400).json({ success: false })
-      break
+      res.status(400).json({ success: false });
+      break;
   }
 }

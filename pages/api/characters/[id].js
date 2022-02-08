@@ -1,27 +1,33 @@
-import dbConnect from '../../../utils/dbConnect'
-import Character from '../../../models/Character'
-import { parseAppearances } from '../../../utils/responsePipes'
+import { JSONDriver } from "../../../db/driver";
+import { parseOneObject } from "../../../utils/responsePipes";
 
 export default async function handler(req, res) {
   const {
     query: { id },
     method,
-  } = req
+  } = req;
 
-  await dbConnect()
+  const Character = new JSONDriver("characters");
+  await Character.init();
 
   switch (method) {
-    case 'GET':
+    case "GET":
       try {
-        const character = await Character.findById(id)/* find data that contains ID in database */
-        character = parseAppearances(character)
-        res.status(200).json({ success: true, count: character.length, data: character })
+        const character = Character.findById(id);
+        character.data = parseOneObject(character.data, "games/", "appearances");
+        res
+          .status(200)
+          .json({
+            success: true,
+            count: character.data.length,
+            data: character.data,
+          });
       } catch (error) {
-        res.status(400).json({ success: false })
+        res.status(400).json({ success: false });
       }
-      break
+      break;
     default:
-      res.status(400).json({ success: false })
-      break
+      res.status(400).json({ success: false });
+      break;
   }
 }

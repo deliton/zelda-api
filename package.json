@@ -7,11 +7,13 @@
     "start": "next start"
   },
   "dependencies": {
-    "mongoose": "^5.9.13",
-    "next": "^9.4.2",
+    "apollo-server-core": "^3.6.2",
+    "apollo-server-micro": "^3.6.2",
+    "graphql": "^16.3.0",
+    "micro": "^9.3.4",
+    "next": "12",
     "react": "^16.13.1",
-    "react-dom": "^16.13.1",
-    "swr": "0.2.2"
+    "react-dom": "^16.13.1"
   },
   "license": "MIT"
 }

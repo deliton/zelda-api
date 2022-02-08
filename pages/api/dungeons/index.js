@@ -1,39 +1,44 @@
-import dbConnect from '../../../utils/dbConnect'
-import Dungeon from '../../../models/Dungeon'
-import { parseLimit, parseAppearances } from '../../../utils/responsePipes'
+import { JSONDriver } from "../../../db/driver";
+import { parseLimit, parseObject } from "../../../utils/responsePipes";
 
 export default async function handler(req, res) {
-  const { method } = req
+  const { method } = req;
   const pageOptions = {
     page: parseInt(req.query.page, 10) || 0,
     limit: parseLimit(req.query.limit),
-    name: req.query.name || undefined
-  }
+    name: req.query.name || undefined,
+  };
 
-  await dbConnect()
+  const Dungeon = new JSONDriver("dungeons");
+  await Dungeon.init();
 
   switch (method) {
-    case 'GET':
+    case "GET":
       try {
-        var dungeons
+        var dungeons;
         if (pageOptions.name) {
-          dungeons = await Dungeon.find({name: new RegExp(pageOptions.name)})
+          dungeons = Dungeon.search({ name: pageOptions.name })
             .skip(pageOptions.page * pageOptions.limit)
-            .limit(pageOptions.limit)
-        }
-        else {
-          dungeons = await Dungeon.find({})
+            .limit(pageOptions.limit);
+        } else {
+          dungeons = Dungeon.findMany()
             .skip(pageOptions.page * pageOptions.limit)
-            .limit(pageOptions.limit)
+            .limit(pageOptions.limit);
         }
-        dungeons = parseAppearances(dungeons)
-        res.status(200).json({ success: true, count: dungeons.length, data: dungeons })
+        dungeons.data = parseObject(dungeons.data, "games/", "appearances");
+        res
+          .status(200)
+          .json({
+            success: true,
+            count: dungeons.data.length,
+            data: dungeons.data,
+          });
       } catch (error) {
-        res.status(400).json({ success: false })
+        res.status(400).json({ success: false });
       }
-      break
+      break;
     default:
-      res.status(400).json({ success: false })
-      break
+      res.status(400).json({ success: false });
+      break;
   }
 }

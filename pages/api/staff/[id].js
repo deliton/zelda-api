@@ -1,27 +1,29 @@
-import dbConnect from '../../../utils/dbConnect'
-import Staff from '../../../models/Staff'
-import { parseWorkedOn } from '../../../utils/responsePipes'
+import { JSONDriver } from "../../../db/driver";
+import { parseOneObject } from "../../../utils/responsePipes";
 
 export default async function handler(req, res) {
   const {
     query: { id },
     method,
-  } = req
+  } = req;
 
-  await dbConnect()
+  const Staff = new JSONDriver("staff");
+  await Staff.init();
 
   switch (method) {
-    case 'GET':
+    case "GET":
       try {
-        const staff = await Staff.findById(id)/* find data that contains ID in database */
-        staff = parseWorkedOn(staff)
-        res.status(200).json({ success: true,count: staff.length, data: staff })
+        const staff = Staff.findById(id);
+        staff.data = parseOneObject(staff.data, "games/", "worked_on");
+        res
+          .status(200)
+          .json({ success: true, count: staff.data.length, data: staff.data });
       } catch (error) {
-        res.status(400).json({ success: false })
+        res.status(400).json({ success: false });
       }
-      break
+      break;
     default:
-      res.status(400).json({ success: false })
-      break
+      res.status(400).json({ success: false });
+      break;
   }
 }
