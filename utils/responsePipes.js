@@ -12,21 +12,21 @@ function parseLimit(limit) {
 }
 
 function parseObject(object, apiPath, objectName) {
-  const apiPath = process.env.API_URL ? process.env.API_URL : "https://zelda.fanapis.com/api/"
+  const root_path = process.env.API_URL ? process.env.API_URL : "https://zelda.fanapis.com/api/"
   return object.map((entries) => {
     return {
       ...entries,
       [objectName]: entries[objectName].map(
-        (objectId) => process.env.API_URL + apiPath + objectId
+        (objectId) => root_path + apiPath + objectId
       ),
     };
   });
 }
 
 function parseOneObject(object, apiPath, objectName) {
-  const apiPath = process.env.API_URL ? process.env.API_URL : "https://zelda.fanapis.com/api/"
+  const root_path = process.env.API_URL ? process.env.API_URL : "https://zelda.fanapis.com/api/"
   const entries = object[objectName].map(
-    (objectId) => process.env.API_URL + apiPath + objectId
+    (objectId) => root_path + path + objectId
   );
   return {
     ...object,
