@@ -7,7 +7,7 @@ export const JSONLoader = async (model) => {
     return;
   }
   if (!data[model]) {
-    data[model] = JSON.parse(await readFile(`db/data/${model}.json`));
+    data[model] = JSON.parse(await readFile(`./data/${model}.json`));
   }
   return data[model];
 };
