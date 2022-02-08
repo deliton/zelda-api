@@ -16,7 +16,7 @@ function parseObject(object, apiPath, objectName) {
     return {
       ...entries,
       [objectName]: entries[objectName].map(
-        (objectId) => process.env.API_URL + apiPath + objectId["$oid"]
+        (objectId) => process.env.API_URL + apiPath + objectId
       ),
     };
   });
@@ -24,7 +24,7 @@ function parseObject(object, apiPath, objectName) {
 
 function parseOneObject(object, apiPath, objectName) {
   const entries = object[objectName].map(
-    (objectId) => process.env.API_URL + apiPath + objectId["$oid"]
+    (objectId) => process.env.API_URL + apiPath + objectId
   );
   return {
     ...object,

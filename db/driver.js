@@ -44,7 +44,7 @@ export class JSONDriver {
     if (!this.isInitialized) {
       throw new Error(NOT_INITIALIZED_ERROR);
     }
-    this.data = this.data.find((entry) => entry._id["$oid"] === id);
+    this.data = this.data.find((entry) => entry.id === id);
     return this;
   }
 
@@ -96,19 +96,32 @@ export class JSONDriver {
       throw new Error("On cannot be undefined.");
     }
     const loadedModel = await JSONLoader(model);
-    this.data = this.data.map((entry) => {
-      return {
-        ...entry,
-        [on]:
-          typeof entry[on] === "object"
-            ? entry[on].map((id) => {
-                return loadedModel.find(
-                  (modelEntry) => modelEntry._id["$oid"] === id["$oid"]
-                );
-              })
-            : [],
-      };
-    });
+    this.data =
+      typeof this.data.map === "undefined"
+        ? {
+            ...this.data,
+            [on]:
+              typeof this.data[on] === "object"
+                ? this.data[on].map((id) => {
+                    return loadedModel.find(
+                      (modelEntry) => modelEntry.id === id
+                    );
+                  })
+                : [],
+          }
+        : this.data.map((entry) => {
+            return {
+              ...entry,
+              [on]:
+                typeof entry[on] === "object"
+                  ? entry[on].map((id) => {
+                      return loadedModel.find(
+                        (modelEntry) => modelEntry.id === id
+                      );
+                    })
+                  : [],
+            };
+          });
     return this;
   }
 }
