@@ -12,6 +12,7 @@ function parseLimit(limit) {
 }
 
 function parseObject(object, apiPath, objectName) {
+  const apiPath = process.env.API_URL ? process.env.API_URL : "https://zelda.fanapis.com/api/"
   return object.map((entries) => {
     return {
       ...entries,
@@ -23,6 +24,7 @@ function parseObject(object, apiPath, objectName) {
 }
 
 function parseOneObject(object, apiPath, objectName) {
+  const apiPath = process.env.API_URL ? process.env.API_URL : "https://zelda.fanapis.com/api/"
   const entries = object[objectName].map(
     (objectId) => process.env.API_URL + apiPath + objectId
   );
