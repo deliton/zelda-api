@@ -28,7 +28,7 @@ function Index() {
           <img className='apiLogo' src='https://user-images.githubusercontent.com/47995046/94375902-3ddbdb80-00ed-11eb-9acf-aa6a114af01b.png'/>
           <div className='buttons'>
             <a className='myButton'
-              href='https://docs.zelda-api.apius.cc/docs'>
+              href='https://docs.zelda.fanapis.com/docs'>
               Go to Documentation
             </a>
           </div>
